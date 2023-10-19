@@ -4,13 +4,47 @@ using UnityEngine;
 
 public class Slingshot : MonoBehaviour
 {
+    [Header("Inscribed")]
+    public GameObject projectilePrefab;
+    public float launchSpeedMultiplier = 10f;
+
+    [Header("Dynamic")]
     public GameObject launchPoint;
+    public Vector3 launchPosition;
+    public GameObject projectile;
+    public bool aimingMode;
 
     private void Awake()
     {
         Transform launchPointTransform = transform.Find("LaunchPoint");
         launchPoint = launchPointTransform.gameObject;
         launchPoint.SetActive(false);
+        launchPosition = launchPointTransform.position;
+    }
+
+    private void Update()
+    {
+        if (!aimingMode) return;
+
+        Vector3 mousePosition = Input.mousePosition;
+        mousePosition.z = Camera.main.transform.position.z;
+        mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
+
+        Vector3 mouseDelta = mousePosition - launchPosition;
+        float maxMagnitude = GetComponent<SphereCollider>().radius;
+        
+        Vector3 projectilePosition = launchPosition + Vector3.ClampMagnitude(mouseDelta, maxMagnitude);
+        projectile.transform.position = projectilePosition;
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            aimingMode = false;
+            Rigidbody rigidbody = projectile.GetComponent<Rigidbody>();
+            rigidbody.isKinematic = false;
+            rigidbody.collisionDetectionMode = CollisionDetectionMode.Continuous;
+            rigidbody.velocity = -mouseDelta * launchSpeedMultiplier;
+            projectile = null;
+        }
     }
 
     private void OnMouseEnter()
@@ -21,5 +55,13 @@ public class Slingshot : MonoBehaviour
     private void OnMouseExit()
     {
         launchPoint.SetActive(false);
+    }
+
+    private void OnMouseDown()
+    {
+        aimingMode = true;
+        projectile = Instantiate<GameObject>(projectilePrefab);
+        projectile.transform.position = launchPosition;
+        projectile.GetComponent<Rigidbody>().isKinematic = true;
     }
 }
