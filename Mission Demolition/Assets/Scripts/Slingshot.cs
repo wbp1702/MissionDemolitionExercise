@@ -30,10 +30,10 @@ public class Slingshot : MonoBehaviour
         mousePosition.z = Camera.main.transform.position.z;
         mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
 
-        Vector3 mouseDelta = mousePosition - launchPosition;
         float maxMagnitude = GetComponent<SphereCollider>().radius;
+        Vector3 mouseDelta = Vector3.ClampMagnitude(mousePosition - launchPosition, maxMagnitude);
         
-        Vector3 projectilePosition = launchPosition + Vector3.ClampMagnitude(mouseDelta, maxMagnitude);
+        Vector3 projectilePosition = launchPosition + mouseDelta;
         projectile.transform.position = projectilePosition;
 
         if (Input.GetMouseButtonUp(0))
@@ -43,6 +43,7 @@ public class Slingshot : MonoBehaviour
             rigidbody.isKinematic = false;
             rigidbody.collisionDetectionMode = CollisionDetectionMode.Continuous;
             rigidbody.velocity = -mouseDelta * launchSpeedMultiplier;
+            FollowCam.PointOfIntrest = projectile;
             projectile = null;
         }
     }
