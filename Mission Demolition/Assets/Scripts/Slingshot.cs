@@ -24,10 +24,10 @@ public class Slingshot : MonoBehaviour
 
     private void Update()
     {
-        if (!aimingMode) return;
+        if (!aimingMode || projectile == null) return;
 
         Vector3 mousePosition = Input.mousePosition;
-        mousePosition.z = Camera.main.transform.position.z;
+        mousePosition.z = -Camera.main.transform.position.z;
         mousePosition = Camera.main.ScreenToWorldPoint(mousePosition);
 
         float maxMagnitude = GetComponent<SphereCollider>().radius;
